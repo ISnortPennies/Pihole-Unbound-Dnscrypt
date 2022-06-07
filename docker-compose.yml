@@ -1,0 +1,68 @@
+version: '2'
+
+services:
+  pihole:
+    container_name: pihole
+    hostname: pihole
+    image: pihole/pihole:latest
+    environment:
+      CUSTOM_CACHE_SIZE: 0
+      IPv6: 'false'
+      TZ: America/New_York
+      WEBPASSWORD:
+      DNSSEC: 'false'
+      REV_SERVER: 'true'
+      FTLCONF_REPLY_ADDR4: 192.168.1.10
+      REV_SERVER_TARGET: 192.168.1.1
+      REV_SERVER_CIDR: "192.168.1.0/24"
+      VIRTUAL_HOST: 192.168.1.10
+      WEBTHEME: default-darker
+      DNS_BOGUS_PRIV: 'true'
+      DNS_FQDN_REQUIRED: 'true'
+      PIHOLE_DNS_: 192.168.1.9
+      DNSMASQ_USER: 'root'
+    volumes:
+      - /root/dns/pihole/pihole:/etc/pihole
+      - /root/dns/pihole/dnsmasq:/etc/dnsmasq.d
+    networks:
+      macvlan:
+        ipv4_address: 192.168.1.10
+      bridge:
+        ipv4_address: 172.18.0.3
+    restart: always
+  unbound:
+    container_name: unbound
+    hostname: unbound
+    image: klutchell/unbound:latest
+    volumes:
+      - /root/dns/unbound/:/etc/unbound/
+    networks:
+      macvlan:
+        ipv4_address: 192.168.1.9
+    restart: always
+  dnscrypt-proxy:
+    hostname: dnscrypt
+    container_name: dnscrypt
+    image: gists/dnscrypt-proxy:latest
+    volumes:
+      - /root/dns/dnscrypt-proxy/:/etc/dnscrypt-proxy/
+    networks:
+      macvlan:
+        ipv4_address: 192.168.1.8
+      bridge:
+        ipv4_address: 172.18.0.2
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+    restart: always
+networks:
+  macvlan:
+    driver: macvlan
+    driver_opts:
+      parent: eth0
+    ipam:
+      config:
+        - subnet: "192.168.1.0/24"
+          gateway: "192.168.1.1"
+          ip_range: "192.168.1.0/24"
+  bridge:
