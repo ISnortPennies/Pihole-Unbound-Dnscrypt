@@ -19,7 +19,7 @@ services:
       WEBTHEME: default-darker
       DNS_BOGUS_PRIV: 'true'
       DNS_FQDN_REQUIRED: 'true'
-      PIHOLE_DNS_: 192.168.1.9
+      PIHOLE_DNS_: 172.18.0.3
       DNSMASQ_USER: 'root'
     volumes:
       - /root/dns/pihole/pihole:/etc/pihole
@@ -28,7 +28,7 @@ services:
       macvlan:
         ipv4_address: 192.168.1.10
       bridge:
-        ipv4_address: 172.18.0.3
+        ipv4_address: 172.18.0.2
     restart: always
   unbound:
     container_name: unbound
@@ -37,8 +37,8 @@ services:
     volumes:
       - /root/dns/unbound/:/etc/unbound/
     networks:
-      macvlan:
-        ipv4_address: 192.168.1.9
+      bridge:
+        ipv4_address: 172.18.0.3
     restart: always
   dnscrypt-proxy:
     hostname: dnscrypt
@@ -47,10 +47,8 @@ services:
     volumes:
       - /root/dns/dnscrypt-proxy/:/etc/dnscrypt-proxy/
     networks:
-      macvlan:
-        ipv4_address: 192.168.1.8
       bridge:
-        ipv4_address: 172.18.0.2
+        ipv4_address: 172.18.0.4
     dns:
       - 1.1.1.1
       - 1.0.0.1
